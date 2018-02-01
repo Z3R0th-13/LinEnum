@@ -1,181 +1,123 @@
 #!/bin/bash
 
-echo "******************************************************************"
-echo "******************************************************************"
-echo "**                                                              **"
-echo "**                           Enum                               **"
-echo "**                    Written by: Z3R0th                        **"
-echo "**                                                              **"
-echo "**                                                              **"
-echo "******************************************************************"
-echo "******************************************************************"
+#Simple enumeration script for Linux Operating Systems. It looks for common misconfigurations and basic enumeration of the target.
 
-printf "If you're running in a limited shell try running the following command: python -c \'import pty;pty.spawn(\"/bin/bash\")'\n"
+# ******************************************************************
+# ******************************************************************
+# **                                                              **
+# **                          LinEnum                             **
+# **                    Written by: Z3R0th                        **
+# **                                                              **
+# **                                                              **
+# ******************************************************************
+# ******************************************************************
 
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
 
-Version="uname -a"
-printf "The current kernel running is: "; $Version
 
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
+#Loading colors into BASH
+red='\e[1;31m' #red text
+yellow='\e[0;33m' #yellow text
+RESET="\033[00m" #normal text
+orange='\e[38;5;166m' #orange text
 
-printf "The hostname for this machine is: "; hostname
+PWD="$(pwd)" #Save current working directory as variable in order to return
+Version="$(uname -a)" #Grab the kernel version
+Hostname="$(hostname)" #Grab the hostname
+Who="$(whoami)" #Who you are currently running as
+ID="$(id)" #Permissions ish.
+IP="$(ifconfig eth0 | grep 'inet' | cut -d' ' -f 10 | grep -v 'fe')" #IP assigned to eth0
+Arch="$(getconf LONG_BIT)" #Architecture. Whether or not you're in 32 or 64 bit
+Route="$(route)" #print routing table
+Users="$(cat /etc/passwd | cut -d':' -f 1| grep -v 'irc'| grep -v 'gnats' | grep -v postgres | grep -v daemon | grep -v bin | grep -v games | grep -v sys | grep -v sync | grep -v lp| grep -v mail| grep -v news | grep -v uucp | grep -v proxy | grep -v 'www-data' | grep -v backup | grep -v list| grep -v nobody | grep -v 'systemd-timesync' | grep -v 'systemd-network' | grep -v 'systemd-resolve' | grep -v man | grep -v '_apt' | grep -v messagebus | grep -v mysql | grep -v avahi | grep -v miredo | grep -v ntp | grep -v stunnel4 | grep -v uuidd | grep -v 'Debian-exim' | grep -v statd | grep -v arpwatch | grep -v colord | grep -v epmd | grep -v couchdb | grep -v dnsmasq | grep -v geoclue | grep -v pulse | grep -v 'speech-dispatcher' | grep -v sshd | grep -v iodine | grep -v 'king-phisher' | grep -v redsocks | grep -v rwhod | grep -v sslh | grep -v rtkit | grep -v saned | grep -v usbmux | grep -v 'Debian-gdm' | grep -v 'beef-xss' | grep -v dradis| grep -v clamav | grep -v redis| grep -v 'Debian-snmp')" #Users outside of normal groups
+DNS="$(cat /etc/resolv.conf | grep nameserver | cut -d ' ' -f 2)" #Default nameserver IP
+GCC="$(gcc --version | grep gcc)" #GCC Version
+SQL="$(mysql --version)" #SQL Version
+Perl="$(perl --version | grep perl | grep subversion)" #Perl Version
+Ruby="$(ruby --version)" #Ruby Version
+Python="$(python -c 'import sys; print(".".join(map(str, sys.version_info[:3])))')" #Python Version. Not sure why but this prints at top of script?
+PrintPath="$(echo $PATH)" #Current environment variables
 
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
+#Chart to be printed. Shows variables that were grabbed for enumeration
+echo " _______________________________________________________________________________________________________________________________________________________________________________________________________"
+echo "|                                                                       "
+echo "|   Name         | Description          |         Target Info           "
+echo "|_______________________________________________________________________________________________________________________________________________________________________________________________________"
+echo "|                                                                       "
+echo "|   Version      | Kernel Running       | $Version"
+echo "|   Hostname     | Hostname for system  | $Hostname"
+echo "|   User         | Current User         | $Who"
+echo "|   Permissions  | Current Permissions  | $ID"
+echo "|   IP           | Current IP           | $IP"
+echo "|   Architecture | CPU Architecture     | $Arch-bit"
+echo "|   DNS          | Default Nameserver   | $DNS"
+echo "|   GCC          | GCC Version          | $GCC"
+echo "|   SQL          | SQL Version          | $SQL"
+echo "|   Perl         | Perl Version         | $Perl"
+echo "|   Ruby         | Ruby Version         | $Ruby"
+echo "|   Python       | Python Version       | $Python"
+echo "|   Path         | Path Variables       | $PrintPath"
+echo "|_______________________________________________________________________________________________________________________________________________________________________________________________________"
+echo " "
 
-Who=whoami
-printf "You are currently running as: "; $Who
-
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
-
-ID=id
-printf "You currently have the following permissions: "; $ID
-
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
-
-IP="ifconfig eth0 | grep 'inet' | cut -d' ' -f 10 | grep -v 'fe'"
-printf "Your current local IP is: "; eval $IP
-
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
-
-Arch="getconf LONG_BIT"
-printf "You are currently in a ";$Arch | tr -d "\n"; printf ' bit machine\n'
-
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
-
-Route=route
-printf "The routing table is as follows:\n"; $Route
-
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
-
-Users="cat /etc/passwd | cut -d':' -f 1| grep -v 'irc'| grep -v 'gnats' | grep -v postgres | grep -v daemon | grep -v bin | grep -v games | grep -v sys | grep -v sync | grep -v lp| grep -v mail| grep -v news | grep -v uucp | grep -v proxy | grep -v 'www-data' | grep -v backup | grep -v list| grep -v nobody | grep -v 'systemd-timesync' | grep -v 'systemd-network' | grep -v 'systemd-resolve' | grep -v man | grep -v '_apt' | grep -v messagebus | grep -v mysql | grep -v avahi | grep -v miredo | grep -v ntp | grep -v stunnel4 | grep -v uuidd | grep -v 'Debian-exim' | grep -v statd | grep -v arpwatch | grep -v colord | grep -v epmd | grep -v couchdb | grep -v dnsmasq | grep -v geoclue | grep -v pulse | grep -v 'speech-dispatcher' | grep -v sshd | grep -v iodine | grep -v 'king-phisher' | grep -v redsocks | grep -v rwhod | grep -v sslh | grep -v rtkit | grep -v saned | grep -v usbmux | grep -v 'Debian-gdm' | grep -v 'beef-xss' | grep -v dradis| grep -v clamav | grep -v redis| grep -v 'Debian-snmp'"
-printf "The following are users exist on this machine:\n"; eval $Users
-
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
-
+echo -e $yellow"========================================================================================================================================================================================================"$RESET
+#Check to see if root. If you are root then dump hashes. 
 CheckIfRoot="id -u"
 Shadow="cat /etc/shadow | cut -d ':' -f1-2 | grep -v '*' | grep -v '!'"
 if [[ "$CheckIfRoot" -eq 0 ]]; 
-then printf "Here are the hashes I was able to dump!\n"; eval $Shadow
+then echo -e $orange"Here are the hashes I was able to dump!\n" $RESET; eval $Shadow
 else 
-printf "Please escalate to Root to get hashes\n"
+echo -e $red"Please escalate to Root to get hashes\n" $RESET
 fi
 
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
-
+echo -e $yellow"========================================================================================================================================================================================================"$RESET
+#Dumps all iptables in place
 IPTables="iptables -L -n -v"
-printf "Checking for firewall rules!\n"; $IPTables
+echo -e $orange"Checking for firewall rules!\n" $RESET; $IPTables
 
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
+echo -e $yellow"========================================================================================================================================================================================================"$RESET
+#Dump all of the home directory folders
+echo -e $orange"Here are all of the directories inside of /home"$RESET
+Home="ls -alh"
+cd /home; $Home
+cd $PWD
 
-Home="ls -alh /home/*/"
-printf "Let's look at some home directories!\n"; $Home
-
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
-
+echo -e $yellow"========================================================================================================================================================================================================"$RESET
+#Check for SUID bit files. These can be used to escalate to root sometimes.
 SUID="find / -perm -4000 2>/dev/null"
-printf "Looking for SUID files! (***This could take a while***)\n"; eval $SUID
+echo  -e $orange"Looking for SUID files! (***This could take a while***)\n" $RESET; eval $SUID
 
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
-
+echo -e $yellow"========================================================================================================================================================================================================"$RESET
+#Check to see if you're current user is allowed to sudo
 Sudo="sudo -l"
-printf "There might be programs that can be 'sudoed' as the current user...\n"; $Sudo
+echo -e $orange"There might be programs that can be 'sudoed' as the current user...\n" $RESET; $Sudo
 
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
-
+echo -e $yellow"========================================================================================================================================================================================================"$RESET
+#Dump crontab to see list of current cronjobs
 Cron="cat /etc/crontab"
-printf "These are the current contents of crontab!\n"; $Cron
+echo -e $orange"These are the current contents of crontab!\n" $RESET; $Cron
 
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
-
-SSH="ls /home/*/.ssh"
-printf "Checking for any files for SSH...results may vary...\n"; $SSH
-
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
-
-DNS="cat /etc/resolv.conf"
-printf "Looking for default name servers!\n"; $DNS
-
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
-
+echo -e $yellow"========================================================================================================================================================================================================"$RESET
+#Dump currently logged in users
 LoggedIn="w"
-printf "The following users are logged in currently!\n"; $LoggedIn
+echo -e $orange"The following users are logged in currently!\n" $RESET; $LoggedIn
 
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
-
-GCC="gcc --version | grep gcc"
-printf "Checking to see if GCC is installed and which version it is!\n"; eval $GCC
-
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
-
-SQL="mysql --version"
-printf "Checking to see if MySQL is installed and which version it is!\n"; $SQL
-
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
-
-Perl="perl --version | grep perl"
-printf "Checking to see if Perl is installed and which version it is!\n"; eval $Perl
-
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
-
-Ruby="ruby --version"
-printf "Checking to see if Ruby is installed and which version it is!\n"; $Ruby
-
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
-
-Python="python --version"
-printf "Checking to see if Python is installed and which version it is!\n"; $Python
-
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
-
-printf "The current environmental variables are: "; echo $PATH
-
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
-
+echo -e $yellow"========================================================================================================================================================================================================"$RESET
+#Check arp tables
 Arp="arp -e"
-printf "Let's take a quick look at arp!\n"; eval $Arp
+echo -e $orange"Let's take a quick look at arp!\n" $RESET; eval $Arp
 
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
-
+echo -e $yellow"========================================================================================================================================================================================================"$RESET
+#Show possible areas to mount
 PossibleMount="cat /etc/fstab"
-printf "Here is all of the static information for the filesystem\n"; $PossibleMount
+echo -e $orange"Here is all of the static information for the filesystem\n" $RESET; $PossibleMount
 
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
-
+echo -e $yellow"========================================================================================================================================================================================================"$RESET
+#Show current conntections and open ports
 Connections="netstat -anop | grep -v STREAM | grep -v DGRAM | grep -v unix | grep -v RefCnt | grep -v UNIX"
-printf "Here are the current connections and open ports!\n"; eval $Connections
+echo -e $orange"Here are the current connections and open ports!\n" $RESET; eval $Connections
 
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
-
+echo -e $yellow"========================================================================================================================================================================================================"$RESET
+#List current services on the machine. (+) means that it's running. (-) means that it is not running
 Service="service --status-all | column"
-printf "Here is a list of the services available!\n"; eval $Service
-
-echo "*********************************************************************************************"
-echo "*********************************************************************************************"
+echo -e $orange"Here is a list of the services available!\n" $RESET; eval $Service
+echo " "
